@@ -1,14 +1,15 @@
 
+import 'source/XCBConfig.rb'
+import 'source/FileLines.rb'
+
 #
 # Creates Folders, move the App delegate, creates an empty git repo and commits everything in it
 #
 
-$PROJECT_NAME = ""
-$LINE_LIMIT   = 20
+$XCBCONFIG
 
-task :init do
-  
-  tasks = ["stepIntoProject", "folders", "appDelegate", "stepOutProject", "gitInit", "cocoapods"]
+task :init do |args|
+  tasks = ["xcbConfig", "stepIntoProject", "folders", "appDelegate", "stepOutProject", "gitInit", "cocoapods"]
   
   for task in tasks do
     Rake::Task[task].invoke
@@ -17,22 +18,32 @@ task :init do
   puts "Done!"
 end
 
-task :stepIntoProject do
+task :xcbConfig do
+  
+  startFolder = ENV['folder']
+  if (startFolder && startFolder.size > 0)
+    Dir.chdir(startFolder)
+  end
+    
   projects = FileList.new('*.xcodeproj')
   if (projects.size == 0) 
     puts "No XCode Project found. Exiting"
     exit
   end
   
-  $PROJECT_NAME = projects[0]
-  $PROJECT_NAME.slice! ".xcodeproj"
+  projectName = projects[0]
+  projectName.slice! ".xcodeproj"
   
-  Dir.chdir($PROJECT_NAME)  
+  $XCBCONFIG = XCBConfig.new(projectName, 20)
+end
+
+task :stepIntoProject do  
+  Dir.chdir($XCBCONFIG.projectName)  
 end
 
 task :stepOutProject do
   projects = FileList.new('*.xcodeproj')
-  if (!projects.include?("#{$PROJECT_NAME}.xcodeproj"))
+  if (!projects.include?("#{$XCBCONFIG.projectName}.xcodeproj"))
     Dir.chdir('..')
   end
 end
@@ -73,17 +84,17 @@ end
 
 #create cocoapods
 task :cocoapods => [:stepIntoProject, :stepOutProject] do
-  path = " :path => './#{$PROJECT_NAME}/ext'"
+  path = " :path => './#{$XCBCONFIG.projectName}/ext'"
   
   file = File.open("Podfile", 'w')
   text = <<-eos 
-  target '#{$PROJECT_NAME}' do
-    xcodeproj '#{$PROJECT_NAME}'
+  target '#{$XCBCONFIG.projectName}' do
+    xcodeproj '#{$XCBCONFIG.projectName}'
     pod 'AFNetworking', :head
     pod 'ZFDictionaries', :git => 'https://github.com/cescofry/ZFCategories.git', #{path}
   end
   
-  target :#{$PROJECT_NAME}Tests do
+  target :#{$XCBCONFIG.projectName}Tests do
     pod 'Kiwi', :head
   end
   
@@ -96,54 +107,17 @@ eos
   
 end
 
-
-#
-# Report files with too many lines
-# find Yammer -name YMAbstractThreadSummaryViewController.m -print0 | xargs -0 wc -l | awk '$1 > 861 && $2 != "total" { print $2 ":1: warning: File has " $1 " lines, please refactor." }'
-#
-
-$ALL_LINES
-
-def analizeFileLines(startDir)
-  Dir.chdir(startDir)
+task :lines => [:xcbConfig, :stepIntoProject] do
   
-  files       = Dir.glob('*.{c,h,m}')
-  
-  for file in files
-    output = `wc -l #{file}` ;  result=$?.success?
-    lines = output.scan(/\d+/).first.to_i
-    name = output.scan(/[a-zA-Z_\-\.]+/).first
-  
-    $ALL_LINES.push({'name' => name, 'lines' => lines})
-    # check lines
-    # find Yammer -name YMAbstractThreadSummaryViewController.m -print0 | xargs -0 wc -l | awk '$1 > 861 && $2 != "total" { print $2 ":1: warning: File has " $1 " lines, please refactor." }'
-  end
-  
-  directories = Dir.glob('**')
-    
-  for directory in directories
-    if File.directory?(directory) 
-      analizeFileLines(directory)
-    end
-  end
-  
-  Dir.chdir('..')
-
-end
-
-task :lines => [:stepIntoProject] do
-  $ALL_LINES = Array.new
-  analizeFileLines('.');
+  allLines = FileLines.new('.').analize;
   
   hasPastLimit = false
-  
-  $ALL_LINES = $ALL_LINES.sort_by {|dictionary| dictionary['lines'].to_i}
-  for dictionary in $ALL_LINES
+  for dictionary in allLines
     lines = dictionary['lines'];
     name = dictionary['name'];
     
-    if (!hasPastLimit && lines.to_i > $LINE_LIMIT)
-      puts "\nFiles over the recommended limit of #{$LINE_LIMIT}. Consider refactoring\n"
+    if (!hasPastLimit && lines.to_i > $XCBCONFIG.linesLimit)
+      puts "\nFiles over the recommended limit of #{$XCBCONFIG.linesLimit}. Consider refactoring\n"
       hasPastLimit = true
     end
 
