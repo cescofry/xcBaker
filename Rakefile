@@ -1,5 +1,7 @@
 
 import 'source/XCBConfig.rb'
+import 'source/XCBCocoapods.rb'
+import 'source/XCBGit.rb'
 import 'source/FileLines.rb'
 
 #
@@ -72,39 +74,15 @@ end
 
 #create git repo, add everything to it, commit as "first init"
 task :gitInit do
-  files = FileList.new('.*')
-  if (!files.include?('.git'))
-    puts "Create git repository"
-    sh "git init"
-    
-    sh "git add *"
-    sh "git commit -m \"init project\" "
-  end
+  git = XCBGit.new
+  git.addCommit("First commit")
 end
 
 #create cocoapods
 task :cocoapods => [:stepIntoProject, :stepOutProject] do
-  path = " :path => './#{$XCBCONFIG.projectName}/ext'"
-  
-  file = File.open("Podfile", 'w')
-  text = <<-eos 
-  target '#{$XCBCONFIG.projectName}' do
-    xcodeproj '#{$XCBCONFIG.projectName}'
-    pod 'AFNetworking', :head
-    pod 'ZFDictionaries', :git => 'https://github.com/cescofry/ZFCategories.git', #{path}
-  end
-  
-  target :#{$XCBCONFIG.projectName}Tests do
-    pod 'Kiwi', :head
-  end
-  
-eos
-
-  file.puts text
-  file.close
-  
-  sh "pod install"
-  
+  cocoapods = XCBCocoapods.new($XCBCONFIG)
+  cocoapods.generate
+  cocoapods.install
 end
 
 task :lines => [:xcbConfig, :stepIntoProject] do
