@@ -3,6 +3,7 @@ class XCBConfig
   def initialize(projectName, linesLimit) 
     @projectName = projectName
     @linesLimit = linesLimit
+    @hasTests = false
   end
   
   def projectName
@@ -11,8 +12,12 @@ class XCBConfig
   
   #LinesLimit
   
-  def linesLimit(linesLimit)
+  def linesLimit
     @linesLimit
+  end
+  
+  def hasTestes
+    @hasTests
   end
   
 end
