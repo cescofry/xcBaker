@@ -1,8 +1,8 @@
 
-import 'source/XCBConfig.rb'
-import 'source/XCBCocoapods.rb'
-import 'source/XCBGit.rb'
-import 'source/FileLines.rb'
+import 'src/XCBConfig.rb'
+import 'src/XCBCocoapods.rb'
+import 'src/XCBGit.rb'
+import 'src/FileLines.rb'
 
 #
 # Creates Folders, move the App delegate, creates an empty git repo and commits everything in it
@@ -83,6 +83,11 @@ task :cocoapods => [:stepIntoProject, :stepOutProject] do
   cocoapods = XCBCocoapods.new($XCBCONFIG)
   cocoapods.generate
   cocoapods.install
+end
+
+task :blameFile do
+  git = XCBGit.new
+  git.blameFile('Rakefile')
 end
 
 task :lines => [:xcbConfig, :stepIntoProject] do
