@@ -2,7 +2,7 @@
 import 'src/XCBConfig.rb'
 import 'src/XCBCocoapods.rb'
 import 'src/XCBGit.rb'
-import 'src/FileLines.rb'
+import 'src/XCBFileLines.rb'
 
 #
 # Creates Folders, move the App delegate, creates an empty git repo and commits everything in it
@@ -75,7 +75,7 @@ end
 #create git repo, add everything to it, commit as "first init"
 task :gitInit do
   git = XCBGit.new('master')
-  git.addCommit("First commit")
+  git.addCommitWithMessage("First commit")
 end
 
 #create cocoapods
@@ -102,7 +102,7 @@ end
 
 task :lines => [:xcbConfig, :stepIntoProject] do
   
-  allLines = FileLines.new('.').analize;
+  allLines = XCBFileLines.new('.').analize;
   
   hasPastLimit = false
   for dictionary in allLines
