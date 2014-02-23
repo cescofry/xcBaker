@@ -74,7 +74,7 @@ end
 
 #create git repo, add everything to it, commit as "first init"
 task :gitInit do
-  git = XCBGit.new
+  git = XCBGit.new('master')
   git.addCommit("First commit")
 end
 
@@ -86,8 +86,10 @@ task :cocoapods => [:stepIntoProject, :stepOutProject] do
 end
 
 task :blameFile do
-  git = XCBGit.new
-  git.blameFile('Rakefile')
+  git = XCBGit.new('master')
+  files =  git.fileList
+  puts files.size
+#  git.blameFile('Rakefile')
 end
 
 task :lines => [:xcbConfig, :stepIntoProject] do

@@ -3,13 +3,13 @@ class XCBGit
   def initialize(branch = 'master')
     @branch = branch
     if !hasGit
-      sh "git init"
+      `git init`
     end
   end
   
   def addCommitWithMessage(message)
-    sh "git add *"
-    sh "git commit -m \"#{message}\" "
+    `git add *`
+    `git commit -m \"#{message}\"`
   end
   
   def hasChanges
@@ -23,12 +23,12 @@ class XCBGit
   end
   
   def pushToBranch(branch = @branch)
-    sh "git push origin #{branch}"
+    `git push origin #{branch}`
   end
   
   def fileList
-    files = `git ls-tree -r --name-only #{@brach} ./`
-    return files
+    files = `git ls-tree -r --name-only #{@branch} ./`
+    return files.split("\n")
   end  
   
   def blameFile(fileName)
