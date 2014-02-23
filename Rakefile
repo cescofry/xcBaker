@@ -10,8 +10,20 @@ import 'src/XCBFileLines.rb'
 
 $XCBCONFIG
 
+def config  
+  if (!$XCBCONFIG)
+    $XCBCONFIG = XCBConfig.new
+  end
+  
+  return $XCBCONFIG
+end
+
+task :help do
+  XCBConfig::help
+end
+
 task :init do |args|
-  tasks = ["xcbConfig", "stepIntoProject", "folders", "appDelegate", "stepOutProject", "gitInit", "cocoapods"]
+  tasks = ["stepIntoProject", "folders", "appDelegate", "stepOutProject", "gitInit", "cocoapods"]
   
   for task in tasks do
     Rake::Task[task].invoke
@@ -20,32 +32,13 @@ task :init do |args|
   puts "Done!"
 end
 
-task :xcbConfig do
-  
-  startFolder = ENV['folder']
-  if (startFolder && startFolder.size > 0)
-    Dir.chdir(startFolder)
-  end
-    
-  projects = FileList.new('*.xcodeproj')
-  if (projects.size == 0) 
-    puts "No XCode Project found. Exiting"
-    exit
-  end
-  
-  projectName = projects[0]
-  projectName.slice! ".xcodeproj"
-  
-  $XCBCONFIG = XCBConfig.new(projectName, 20)
-end
-
 task :stepIntoProject do  
-  Dir.chdir($XCBCONFIG.projectName)  
+  Dir.chdir(config.projectName)  
 end
 
 task :stepOutProject do
   projects = FileList.new('*.xcodeproj')
-  if (!projects.include?("#{$XCBCONFIG.projectName}.xcodeproj"))
+  if (!projects.include?("#{config.projectName}.xcodeproj"))
     Dir.chdir('..')
   end
 end
@@ -74,33 +67,28 @@ end
 
 #create git repo, add everything to it, commit as "first init"
 task :gitInit do
-  git = XCBGit.new('master')
+  git = XCBGit.new(config.branch)
   git.addCommitWithMessage("First commit")
 end
 
 #create cocoapods
 task :cocoapods => [:stepIntoProject, :stepOutProject] do
-  cocoapods = XCBCocoapods.new($XCBCONFIG)
+  cocoapods = XCBCocoapods.new(config)
   cocoapods.generate
   cocoapods.install
 end
 
 task :blameFile do
-  git = XCBGit.new('master')
+  git = XCBGit.new(config.branch)
   files =  git.fileList
   name = git.blameLatestCommit('Rakefile').author.username
   puts "Last Commit By: #{name}"
   
   ownership = git.blameOwners('Rakefile')
-  puts "Commit ownership: #{ownership}"
-  
-  line = 2
-  name = git.commitForFileAtLine('Rakefile', 2).author.username
-  puts "Owner for commit at line #{line}: #{name}"
-  
+  puts "Commit ownership: #{ownership}"  
 end
 
-task :lines => [:xcbConfig, :stepIntoProject] do
+task :lines => [:stepIntoProject] do
   
   allLines = XCBFileLines.new('.').analize;
   
@@ -109,8 +97,8 @@ task :lines => [:xcbConfig, :stepIntoProject] do
     lines = dictionary['lines'];
     name = dictionary['name'];
     
-    if (!hasPastLimit && lines.to_i > $XCBCONFIG.linesLimit)
-      puts "\nFiles over the recommended limit of #{$XCBCONFIG.linesLimit}. Consider refactoring\n"
+    if (!hasPastLimit && lines.to_i > config.linesLimit)
+      puts "\nFiles over the recommended limit of #{config.linesLimit}. Consider refactoring\n"
       hasPastLimit = true
     end
 
