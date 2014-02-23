@@ -1,6 +1,61 @@
 require 'date'
 require 'strscan'
 
+class XCBGitCommitLine
+  attr_accessor :hash
+  attr_accessor :author
+  attr_accessor :date
+  attr_accessor :line
+  attr_accessor :text
+  
+  def initialize(line)
+    scanner = StringScanner.new(line)
+    
+    @hash = scanner.scan(/[\w^]+/)
+    
+    scanner.skip_until(/\(/);
+    name = scanner.scan_until(/[\w]+/)
+    surname = scanner.scan_until(/\w+/)
+    @author = XCBGitAuthor.new("#{name} #{surname}", nil)
+    
+    scanner.scan(/\s+/)
+    date = scanner.scan(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [+-]\d{4}/)
+    begin
+      @date = DateTime.strptime(date, '%Y-%m-%d %H:%M:%S %z')
+    rescue
+      @date = DateTime.new
+    end
+    
+    @line = scanner.scan_until(/\d{1,2}\)/).to_i
+  
+    @text = scanner.rest
+  end
+  
+end
+
+class XCBGitAuthor
+  attr_accessor :username
+  attr_accessor :email
+  
+  def initialize(username, email)
+    @username = username
+    @email = email
+  end
+
+  # Equality
+  
+  def eql?(anAuthor)
+    @username == anAuthor.username 
+    end
+
+  def hash
+    return @username.hash
+  end
+  
+end
+
+###
+
 class XCBGit
   
   def initialize(branch = 'master')
@@ -40,58 +95,52 @@ class XCBGit
   end
   
   def mapBlameFile(fileName)
-    linesS = `git blame #{fileName}`
-    lines = linesS.split("\n")
-    
-    mappedLines = Array.new
-    for line in lines do
-      
-      scanner = StringScanner.new(line)
-      
-      hash = scanner.scan(/[\w^]+/)
-      name = scanner.scan_until(/[\w]+/)
-      surname = scanner.scan_until(/\w+/)
-      scanner.scan(/\s+/)
-      date = scanner.scan(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [+-]\d{4}/)
-      number = scanner.scan_until(/\d{1,2}\)/).to_i
-      text = scanner.rest
-
-      
-       begin
-         date = DateTime.strptime(date, '%Y-%m-%d %H:%M:%S %z')
-       rescue
-         date = DateTime.new
-       end
-    
-      mappedLines.push({
-        'hash' => hash,
-        'name' => "#{name} #{surname}",
-        'date' => date,
-        'line' => number,
-        'text' => text
-      })
-    end
-    
-#    2014-02-22 10:00:21 +0000       2014-02-2220:31:28+0000
-    
-    return mappedLines
-  end
-  
-  def blameFile(fileName)
     
     if(!fileExists(fileName))
       puts "File #{fileName} not found in the repository" 
       return
     end
     
-    lines = mapBlameFile(fileName).sort_by {|dictionary| dictionary['date']}
+    linesS = `git blame #{fileName}` #refactor using --line-porcelain
+    lines = linesS.split("\n")
     
-    # define method for checking who is latest commit 
-    # define method for checking who are the major owners
-    # define method for checking who is owner at line
-
-    puts lines
+    mappedLines = Array.new
+    for line in lines do
+      commit = XCBGitCommitLine.new(line)
+      mappedLines.push(commit)
+    end
     
+    return mappedLines
+  end
+  
+  def blameLatestCommit(fileName)
+    lines = mapBlameFile(fileName).sort_by {|commit| commit.date}
+    return lines.last 
+  end
+  
+  def blameOwners(fileName)
+    lines = mapBlameFile(fileName)
+    
+    owners = Hash.new
+    owners.default = 0
+    
+    for line in lines do
+      owners[line.author] = owners[line.author] + 1
+    end
+    
+    percentageOwners = Hash.new
+    totalLines = lines.size
+    owners.each do |author, value|
+      percentage = (Float(value) / totalLines) * 100
+      percentageOwners[author] = percentage.round(2)
+    end
+    
+    return Hash[percentageOwners.sort_by { |name, percentage| percentage  }.reverse]
+  end
+  
+  def commitForFileAtLine(fileName, lineNumber)
+    lines = mapBlameFile(fileName)
+    return lines.detect {|line| line.line == lineNumber}
   end
     
   private 

@@ -88,7 +88,16 @@ end
 task :blameFile do
   git = XCBGit.new('master')
   files =  git.fileList
-  git.blameFile('Rakefile')
+  name = git.blameLatestCommit('Rakefile').author.username
+  puts "Last Commit By: #{name}"
+  
+  ownership = git.blameOwners('Rakefile')
+  puts "Commit ownership: #{ownership}"
+  
+  line = 2
+  name = git.commitForFileAtLine('Rakefile', 2).author.username
+  puts "Owner for commit at line #{line}: #{name}"
+  
 end
 
 task :lines => [:xcbConfig, :stepIntoProject] do
