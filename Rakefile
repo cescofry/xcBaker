@@ -88,8 +88,7 @@ end
 task :blameFile do
   git = XCBGit.new('master')
   files =  git.fileList
-  puts files.size
-#  git.blameFile('Rakefile')
+  git.blameFile('Rakefile')
 end
 
 task :lines => [:xcbConfig, :stepIntoProject] do
