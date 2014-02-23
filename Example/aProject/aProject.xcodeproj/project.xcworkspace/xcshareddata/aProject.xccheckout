@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>DDED0B71-010E-4315-B87E-19897B9A9AA1</string>
+	<key>IDESourceControlProjectName</key>
+	<string>aProject</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>CC8267A1-27E0-4EF3-B089-67F80EB030F2</key>
+		<string>https://github.com/cescofry/xcBaker.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>Example/aProject/aProject.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>CC8267A1-27E0-4EF3-B089-67F80EB030F2</key>
+		<string>../../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/cescofry/xcBaker.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>CC8267A1-27E0-4EF3-B089-67F80EB030F2</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>CC8267A1-27E0-4EF3-B089-67F80EB030F2</string>
+			<key>IDESourceControlWCCName</key>
+			<string>xcBaker</string>
+		</dict>
+	</array>
+</dict>
+</plist>
