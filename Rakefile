@@ -101,23 +101,22 @@ task :lines do
     lines = file.lines
     name = file.name
     
-    oldFile = oldLines.select {|file| file.name.equal? name}.first
+    oldFile = oldLines.select {|file| file.name.eql? name}.first
+    
     if (oldFile && oldFile.lines != lines)
       user = git.blameLatestCommit('Rakefile').author.username
       puts "#{name} changed by #{user} went from #{oldFile.lines} to #{lines} lines"
     end
     if (lines > config.linesLimit)
       oldLinesAnalizer.putFile(file)
+      
+      if (!hasPastLimit)
+        puts "\nFiles over the recommended limit of #{config.linesLimit}. Consider refactoring\n"
+        hasPastLimit = true
+      end
+      puts "#{lines}    #{name}"
     end
     
-    
-    #parsing
-    if (!hasPastLimit && lines > config.linesLimit)
-      puts "\nFiles over the recommended limit of #{config.linesLimit}. Consider refactoring\n"
-      hasPastLimit = true
-    end
-
-    puts "#{lines}    #{name}"
   end
   
   oldLinesAnalizer.close
