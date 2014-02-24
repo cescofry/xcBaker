@@ -95,10 +95,7 @@ task :lines do
   
   allLines = XCBLinesAnalizer.new('.').analize
   oldLines = oldLinesAnalizer.analize
-  
-  puts allLines
-  puts oldLines
-  
+    
   hasPastLimit = false
   for file in allLines
     lines = file.lines

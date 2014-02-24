@@ -37,8 +37,8 @@ class XCBLinesFromFile
     file = File.new(@file, "r")
     allLines = Array.new
     while (line = file.gets)
-      file = XBFile.new(line)
-      allLines.push(file)
+      xcFile = XCBFile.new(line)
+      allLines.push(xcFile)
     end
   
     file.close
@@ -103,7 +103,9 @@ class XCBLinesAnalizer
       end
     end
   
-    Dir.chdir('..')
+    if (!startDir.eql? '.')
+      Dir.chdir('..')
+    end
   end
   
 end

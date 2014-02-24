@@ -91,16 +91,6 @@ static bool _isLoadingThroughSingleton = NO;
     return sharedObject;
 }
 
-+ (id)allocWithZone:(NSZone *)zone {
-    @synchronized(self) {
-        if (sharedObject == nil) {
-            sharedObject = [super allocWithZone:zone];
-            return sharedObject;  // assignment and return on first allocation
-        }
-    }
-    return nil; // on subsequent allocation attempts return nil
-}
-
 - (id)copyWithZone:(NSZone *)zone {
     return self;
 }
