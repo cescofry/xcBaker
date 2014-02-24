@@ -6,7 +6,7 @@ require 'strscan'
 #
 
 class XCBFile
-  attr_accessor name
+  attr_accessor :name
   attr_accessor :lines
   
   def initialize(lineString)
@@ -31,7 +31,7 @@ class XCBLinesFromFile
   def analize
     
     if (!File.exists?(@file))
-      return nil
+      return Array.new
     end
     
     file = File.new(@file, "r")
@@ -55,10 +55,10 @@ class XCBLinesFromFile
       return
     end
     
-    file = File.new(file, 'w')
+    file = File.new(@file, "w")
     
-    for file in @newFiles
-      file.write("#{file.lines} #{file.name}\n")
+    for fileLine in @newFiles
+      file.write("#{fileLine.lines} #{fileLine.name}\n")
     end
     
     file.close
@@ -90,7 +90,7 @@ class XCBLinesAnalizer
     for file in files
       output = `wc -l #{file}` ;  result=$?.success?
       
-      file = XBFile.new(output)
+      file = XCBFile.new(output)
   
       @allLines.push(file)
     end

@@ -104,13 +104,13 @@ task :lines do
     lines = file.lines
     name = file.name
     
-    oldFile = oldFiles.select {|file| file.name.equal? name}
+    oldFile = oldLines.select {|file| file.name.equal? name}.first
     if (oldFile && oldFile.lines != lines)
       user = git.blameLatestCommit('Rakefile').author.username
       puts "#{name} changed by #{user} went from #{oldFile.lines} to #{lines} lines"
     end
     if (lines > config.linesLimit)
-      oldLineAnalizer.putFile(file)
+      oldLinesAnalizer.putFile(file)
     end
     
     
