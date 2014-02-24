@@ -1,9 +1,73 @@
+require 'strscan'
+
 #
 # Report files with too many lines
 # find Yammer -name YMAbstractThreadSummaryViewController.m -print0 | xargs -0 wc -l | awk '$1 > 861 && $2 != "total" { print $2 ":1: warning: File has " $1 " lines, please refactor." }'
 #
 
-class FileLines
+class XCBFile
+  attr_accessor name
+  attr_accessor :lines
+  
+  def initialize(lineString)
+    if (!lineString || lineString.size == 0)
+      return
+    end
+    
+    scanner = StringScanner.new(lineString)
+    @lines = scanner.scan_until(/\d+/).to_i
+    @name = scanner.rest.strip
+  end
+  
+end
+
+class XCBLinesFromFile
+  
+  def initialize(file)
+    @file = file
+    @newFiles = Array.new
+  end
+  
+  def analize
+    
+    if (!File.exists?(@file))
+      return nil
+    end
+    
+    file = File.new(@file, "r")
+    allLines = Array.new
+    while (line = file.gets)
+      file = XBFile.new(line)
+      allLines.push(file)
+    end
+  
+    file.close
+    
+    return allLines;
+  end
+  
+  def putFile(file)
+    @newFiles.push(file)
+  end
+  
+  def close
+    if(@newFiles.size == 0)
+      return
+    end
+    
+    file = File.new(file, 'w')
+    
+    for file in @newFiles
+      file.write("#{file.lines} #{file.name}\n")
+    end
+    
+    file.close
+    
+  end
+  
+end
+
+class XCBLinesAnalizer
   
   def initialize(startDir)
     @startDirectory = startDir
@@ -11,9 +75,8 @@ class FileLines
   end
   
   def analize
-    allLines = Array.new
     recurseDirectory(@startDirectory)
-    @allLines = @allLines.sort_by {|dictionary| dictionary['lines'].to_i}
+    @allLines = @allLines.sort_by {|file| file.lines.to_i}
     return @allLines;
   end
 
@@ -26,12 +89,10 @@ class FileLines
   
     for file in files
       output = `wc -l #{file}` ;  result=$?.success?
-      lines = output.scan(/\d+/).first.to_i
-      name = output.scan(/[a-zA-Z_\-\.]+/).first
+      
+      file = XBFile.new(output)
   
-      @allLines.push({'name' => name, 'lines' => lines})
-      # check lines
-      # find Yammer -name YMAbstractThreadSummaryViewController.m -print0 | xargs -0 wc -l | awk '$1 > 861 && $2 != "total" { print $2 ":1: warning: File has " $1 " lines, please refactor." }'
+      @allLines.push(file)
     end
   
     directories = Dir.glob('**')

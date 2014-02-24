@@ -88,21 +88,42 @@ task :blameFile do
   puts "Commit ownership: #{ownership}"  
 end
 
-task :lines => [:stepIntoProject] do
+task :lines do
   
-  allLines = XCBFileLines.new('.').analize;
+  git = XCBGit.new(config.branch)
+  oldLinesAnalizer = XCBLinesFromFile.new('etc/lines')
+  
+  allLines = XCBLinesAnalizer.new('.').analize
+  oldLines = oldLinesAnalizer.analize
+  
+  puts allLines
+  puts oldLines
   
   hasPastLimit = false
-  for dictionary in allLines
-    lines = dictionary['lines'];
-    name = dictionary['name'];
+  for file in allLines
+    lines = file.lines
+    name = file.name
     
-    if (!hasPastLimit && lines.to_i > config.linesLimit)
+    oldFile = oldFiles.select {|file| file.name.equal? name}
+    if (oldFile && oldFile.lines != lines)
+      user = git.blameLatestCommit('Rakefile').author.username
+      puts "#{name} changed by #{user} went from #{oldFile.lines} to #{lines} lines"
+    end
+    if (lines > config.linesLimit)
+      oldLineAnalizer.putFile(file)
+    end
+    
+    
+    #parsing
+    if (!hasPastLimit && lines > config.linesLimit)
       puts "\nFiles over the recommended limit of #{config.linesLimit}. Consider refactoring\n"
       hasPastLimit = true
     end
 
     puts "#{lines}    #{name}"
   end
+  
+  oldLinesAnalizer.close
+  
 end
 

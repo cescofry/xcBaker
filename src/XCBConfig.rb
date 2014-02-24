@@ -44,8 +44,8 @@ class XCBConfig
     
     projects = FileList.new('*.xcodeproj')
     if (projects.size == 0) 
-      puts "No XCode Project found. Exiting"
-      exit
+      puts "Warning: No XCode Project found."
+      return
     end
   
     projectName = projects[0]
