@@ -1,5 +1,6 @@
 class XCBConfig
   attr_accessor :projectName
+  attr_accessor :workingPath
   attr_accessor :path
   attr_accessor :linesLimit
   attr_accessor :hasTests
@@ -24,7 +25,11 @@ class XCBConfig
   end
   
   def initialize() 
-    @path = ENV['path']
+    
+    @workingPath = Dir.pwd
+    
+    path = ENV['path']
+    @path = (path)? path : '.'
     
     findProject
     
@@ -37,8 +42,10 @@ class XCBConfig
   end
   
   def findProject
+
     if (@path && @path != '.')
       Dir.chdir(@path)
+      @path = Dir.pwd
     end
   
     

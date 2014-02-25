@@ -1,4 +1,5 @@
 require 'strscan'
+import 'src/XCBFileLines.rb'
 
 #
 # Report files with too many lines
@@ -19,12 +20,21 @@ class XCBFile
     @name = scanner.rest.strip
   end
   
+  def to_s
+    return "#{@lines} #{@name}\n"
+  end
+  
 end
+
+#
+# => File Analizer
+#
 
 class XCBLinesFromFile
   
-  def initialize(file)
-    @file = file
+  def initialize(config, file)
+    @config = config
+    @file = "#{config.workingPath}/#{file}"
     @newFiles = Array.new
   end
   
@@ -58,7 +68,7 @@ class XCBLinesFromFile
     file = File.new(@file, "w")
     
     for fileLine in @newFiles
-      file.write("#{fileLine.lines} #{fileLine.name}\n")
+      file.write(fileLine.to_s)
     end
     
     file.close
@@ -67,14 +77,20 @@ class XCBLinesFromFile
   
 end
 
+#
+# => Line Analizer
+#
+
 class XCBLinesAnalizer
   
-  def initialize(startDir)
-    @startDirectory = startDir
+  def initialize(config)
+    @config = config
+    @startDirectory = config.path
     @allLines = Array.new
   end
   
   def analize
+    print "Analize Filesystem at: #{@startDirectory} "
     recurseDirectory(@startDirectory)
     @allLines = @allLines.sort_by {|file| file.lines.to_i}
     return @allLines;
@@ -83,6 +99,7 @@ class XCBLinesAnalizer
   private
 
   def recurseDirectory(startDir)
+    print '.'
     Dir.chdir(startDir)
   
     files = Dir.glob('*.{c,h,m}')
@@ -91,8 +108,9 @@ class XCBLinesAnalizer
       output = `wc -l #{file}` ;  result=$?.success?
       
       file = XCBFile.new(output)
-  
-      @allLines.push(file)
+      if (file && file.lines && file.lines >= @config.linesLimit)
+        @allLines.push(file)
+      end
     end
   
     directories = Dir.glob('**')

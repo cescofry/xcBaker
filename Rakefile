@@ -90,10 +90,11 @@ end
 
 task :lines do
   
+  config.linesLimit = 500
   git = XCBGit.new(config.branch)
-  oldLinesAnalizer = XCBLinesFromFile.new('etc/lines')
+  oldLinesAnalizer = XCBLinesFromFile.new(config, 'etc/lines')
   
-  allLines = XCBLinesAnalizer.new('.').analize
+  allLines = XCBLinesAnalizer.new(config).analize
   oldLines = oldLinesAnalizer.analize
     
   hasPastLimit = false
@@ -103,11 +104,17 @@ task :lines do
     
     oldFile = oldLines.select {|file| file.name.eql? name}.first
     
-    if (oldFile && oldFile.lines != lines)
-      user = git.blameLatestCommit('Rakefile').author.username
-      puts "#{name} changed by #{user} went from #{oldFile.lines} to #{lines} lines"
+    if (oldFile && oldFile.lines)
+      if (oldFile.lines != lines)
+        user = git.blameLatestCommit(file).author.username
+        puts "#{name} changed by #{user} went from #{oldFile.lines} to #{lines} lines"
+      end    
+    else
+      user = git.blameLatestCommit(file).author.username
+      puts "#{name} changed by #{user} now has #{lines} lines"
     end
-    if (lines > config.linesLimit)
+    
+    if (lines && lines > config.linesLimit)
       oldLinesAnalizer.putFile(file)
       
       if (!hasPastLimit)
