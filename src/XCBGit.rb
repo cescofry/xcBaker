@@ -150,3 +150,9 @@ class XCBGit
     return (files.size > 0)
   end
 end
+
+
+
+
+# get what a user worked on in the last 2 weeks -- prety formatted
+# git log --author=Steven --since=2.weeks --no-merges --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit | grep -v 'Point'
