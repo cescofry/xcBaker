@@ -1,5 +1,6 @@
 require 'date'
 require 'strscan'
+#import 'XCBConfig.rb'
 
 class XCBGitCommitLine
   attr_accessor :hash
@@ -36,10 +37,12 @@ end
 class XCBGitAuthor
   attr_accessor :username
   attr_accessor :email
+  attr_accessor :fullName
   
-  def initialize(username, email)
+  def initialize(username, email, fullName)
     @username = username
     @email = email
+    @fullName = fullName
   end
 
   # Equality
@@ -58,8 +61,8 @@ end
 
 class XCBGit
   
-  def initialize(branch = 'master')
-    @branch = branch
+  def initialize(config)
+    @branch = config.branch
     if !hasGit
       `git init`
     end
@@ -141,6 +144,16 @@ class XCBGit
   def commitForFileAtLine(fileName, lineNumber)
     lines = mapBlameFile(fileName)
     return lines.detect {|line| line.line == lineNumber}
+  end
+  
+  def logUserWork(fullName, time)
+    Dir.chdir(config.path)
+    
+    authorCommand = (fullName)? "--author=#{fullName}" : ""
+    sinceCommand = (time)? "--since=#{time}" : ""
+    
+    command = "git log #{authorCommand} #{sinceCommand} --no-merges --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit | grep -v 'Point'"
+    puts `#{command}`
   end
     
   private 

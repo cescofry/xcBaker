@@ -67,7 +67,7 @@ end
 
 #create git repo, add everything to it, commit as "first init"
 task :gitInit do
-  git = XCBGit.new(config.branch)
+  git = XCBGit.new(config)
   git.addCommitWithMessage("First commit")
 end
 
@@ -79,7 +79,7 @@ task :cocoapods => [:stepIntoProject, :stepOutProject] do
 end
 
 task :blameFile do
-  git = XCBGit.new(config.branch)
+  git = XCBGit.new(config)
   files =  git.fileList
   name = git.blameLatestCommit('Rakefile').author.username
   puts "Last Commit By: #{name}"
@@ -91,7 +91,7 @@ end
 task :lines do
   
   config.linesLimit = 500
-  git = XCBGit.new(config.branch)
+  git = XCBGit.new(config)
   oldLinesAnalizer = XCBLinesFromFile.new(config, 'etc/lines')
   
   allLines = XCBLinesAnalizer.new(config).analize
@@ -128,5 +128,10 @@ task :lines do
   
   oldLinesAnalizer.close
   
+end
+
+task :logWork do
+  git = XCBGit.new(config)
+  git.logUserWork(ENV['fullName'], ENV['time'])
 end
 
