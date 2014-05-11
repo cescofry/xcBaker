@@ -7,6 +7,7 @@ require_relative 'lib/XCBTaskManager'
 #
 
 $XCBCONFIG = XCBConfig.new
+$XCBCONFIG.hasTests = true
 $XCBTASKMANAGER = XCBTaskManager.new($XCBCONFIG)
 
 $XCBTASKMANAGER.executeTask

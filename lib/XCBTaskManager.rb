@@ -26,6 +26,7 @@ class XCBTask
   
   def execute!(name = '__main', value = nil)
     executor = @executors[name]
+
     if !executor
       return
     end
@@ -33,6 +34,8 @@ class XCBTask
   end
   
 end
+
+###
 
 class XCBTaskManager
   
@@ -86,16 +89,25 @@ class XCBTaskManager
     #Cocoapods
     podsT = XCBTask.new('cocoapods')
     podsT.help = "interactively install from a list of common cocoapods."
-    podsT.addExecutor('all', "Install all.", nil)
-    @tasks[podsT.name] = podsT
     
+    executorBlock = Proc.new do
+      cocoapods = XCBCocoapods.new(@config)
+      cocoapods.generate
+      cocoapods.install
+    end
+    
+    podsT.addMainExecutor(executorBlock)
+    @tasks[podsT.name] = podsT
+  
+      
+    #Blame
     blameT = XCBTask.new('blame')
     blameT.help = "checks the person responsible for the latest commit and what is the ownership of the file.."
     blameT.addExecutor('filename', "Required, blame the selected filename.", nil)
     blameT.addExecutor('branch', "Optional, master is default.", nil)
     @tasks[blameT.name] = blameT
     
-    linesT = XCBTask.new('cocoapods')
+    linesT = XCBTask.new('lines')
     linesT.help = "checks the list of the longest source files and blame the user who last increased them."
     linesT.addExecutor('branch', "Optional, master is default.", nil)
     @tasks[linesT.name] = linesT
@@ -181,6 +193,38 @@ class XCBTaskManager
     eos
   end
   
+  
+  def interactive(tasks)
+    
+    allowedKeys = ['folders', 'folders.appDelegate', 'git', 'git.bareRemote', 'cocoapods']
+    
+    allowedKeys.each do |key|
+      
+      components = key.split('.')
+      key = components.first
+      task = tasks[key]
+      
+      subTaskKey = nil
+      if (components.size > 1)
+        subTaskKey = components[1]
+      end
+      
+      
+      
+      if (subTaskKey)
+        puts "Execute #{task.name} -#{subTaskKey}? [Y/N]\n"
+      else
+        puts "Execute #{task.name}? [Y/N]\n#{task.help}"
+      end
+      
+      STDOUT.flush
+      result = $stdin.gets.chomp.downcase
+      isYes = (result == 'yes' || result == 'y')
+      if isYes
+        task.execute!(subTaskKey)
+      end
+    end 
+  end
   
 
 end

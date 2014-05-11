@@ -14,7 +14,7 @@ class XCBCocoapods
     target '#{@config.projectName}' do
       xcodeproj '#{@config.projectName}'
       pod 'AFNetworking', :head
-      pod 'ZFDictionaries', :git => 'https://github.com/cescofry/ZFCategories.git', #{path}
+      pod 'ZFCategories', :git => 'https://github.com/cescofry/ZFCategories.git', #{path}
     end
     
   eos
@@ -26,9 +26,9 @@ class XCBCocoapods
   
   eos
 
-    file.puts text
+    file.puts pods
     if (@config.hasTests)
-      fille.puts testPods
+      file.puts testPods
     end
     file.close
   end
@@ -38,7 +38,7 @@ class XCBCocoapods
       puts 'Podfile not found. Use XCBCocoapods:generate command'
       return
     end
-    sh "pod install"
+    system("pod install")
   end
   
   private 
