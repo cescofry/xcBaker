@@ -6,9 +6,11 @@ require_relative 'lib/XCBTaskManager'
 # Creates Folders, move the App delegate, creates an empty git repo and commits everything in it
 #
 
-$XCBCONFIG = XCBConfig.new
-$XCBCONFIG.hasTests = true
-$XCBTASKMANAGER = XCBTaskManager.new($XCBCONFIG)
+config = XCBConfig.new
+config.hasTests = true
+config.libraryName = 'ZFLibrary'
+config.libraryURL = 'https://github.com/cescofry/ZFLibrary.git'
 
-$XCBTASKMANAGER.executeTask
+taskManager = XCBTaskManager.new(config)
+taskManager.executeTask
 

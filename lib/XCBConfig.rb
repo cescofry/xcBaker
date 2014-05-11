@@ -8,6 +8,8 @@ class XCBConfig
   attr_accessor :hasTests
   attr_accessor :fileName
   attr_accessor :branch
+  attr_accessor :libraryName
+  attr_accessor :libraryURL
   
 
   def initialize() 

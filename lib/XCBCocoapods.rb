@@ -7,14 +7,20 @@ class XCBCocoapods
   end
   
   def generate
-    path = " :path => './#{@config.projectName}/ext'"
+    
+    personalLibrary = ''
+    if (@config.libraryName && @config.libraryURL)
+      path = " :path => './#{@config.projectName}/Ext/'"
+      personalLibrary = "pod '##{@config.libraryName}', :git => '#{@config.libraryURL}', #{path}"
+    end
+    
   
     file = File.open("Podfile", 'w')
     pods = <<-eos 
     target '#{@config.projectName}' do
       xcodeproj '#{@config.projectName}'
       pod 'AFNetworking', :head
-      pod 'ZFCategories', :git => 'https://github.com/cescofry/ZFCategories.git', #{path}
+      #{personalLibrary}
     end
     
   eos
@@ -38,6 +44,7 @@ class XCBCocoapods
       puts 'Podfile not found. Use XCBCocoapods:generate command'
       return
     end
+
     system("pod install")
   end
   
