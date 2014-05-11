@@ -77,11 +77,8 @@ class XCBConfig
   end
   
   def libraryPath
-    return extPath.concat(@libraryName)
+    return "./#{@projectName}/Ext/#{@libraryName}"
   end
-  
-  def extPath
-    return "./#{@projectName}/Ext/"
-  end
+
   
 end
