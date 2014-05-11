@@ -7,22 +7,29 @@ require_relative 'XCBFolders'
 class XCBTask
   attr_accessor :name
   attr_accessor :help
-  attr_accessor :flags
+  attr_accessor :executors
   attr_accessor :needsProject
-  attr_accessor :executeBlock
   
   def initialize(name)
     @name = name
-    @flags = Hash.new
+    @executors = Hash.new
     @needsProject = true
   end
   
-  def addFlag(name, description)
-    @flags[name] = description
+  def addExecutor(name, description, block)
+    @executors[name] = { :name => name, :description => description, :block => block }
   end
   
-  def execute!
-    @executeBlock.call()
+  def addMainExecutor(block)
+    addExecutor('__main', '', block)
+  end
+  
+  def execute!(name = '__main')
+    executor = @executors[name]
+    if !executor
+      return
+    end
+    executor[:block].call()
   end
   
 end
@@ -42,46 +49,64 @@ class XCBTaskManager
   def initTasks
     @tasks = Hash.new
     
+    #Folders
     folderT = XCBTask.new('folders')
     folderT.help = "will create an MVC scaffolding on your main project."
-    folderT.addFlag('appDelegate', "to move the appDelegate into Controllers.")
-    folderT.executeBlock = Proc.new do
+    executor = Proc.new do
       folders = XCBFolders.new(@config)
       folders.create
-      
-      if @config.arguments.include?('appDelegate')
-        folders.moveAppDelegate 
-      end
     end
+    
+    folderT.addMainExecutor(executor)
+    
+    executor = Proc.new do
+      folders = XCBFolders.new(@config)
+      folders.moveAppDelegate   
+    end
+    
+    folderT.addExecutor('appDelegate', "to move the appDelegate into Controllers.", executor)
     @tasks[folderT.name] = folderT
     
+    #Git
     gitT = XCBTask.new('git')
     gitT.help = "creates a git repository on project folder."
-    gitT.addFlag('dropBox', "Create a bare repository on dropBox and set it as origin.")
+    executeBlock = Proc.new do
+      git = XCBGit.new(@config)
+      git.addCommitWithMessage("Initailize Project")
+    end
+    gitT.addMainExecutor(executeBlock)
+    
+    executeBlock = Proc.new do
+      puts "//TODO: Not implemented yet #{__FILE__} #{__LINE__}"
+    end
+    gitT.addExecutor('bareRemote', "Create a bare repository on the given path and set it as origin.", executeBlock)
     @tasks[gitT.name] = gitT
     
+    #Cocoapods
     podsT = XCBTask.new('cocoapods')
     podsT.help = "interactively install from a list of common cocoapods."
-    podsT.addFlag('all', "Install all.")
+    podsT.addExecutor('all', "Install all.", nil)
     @tasks[podsT.name] = podsT
     
     blameT = XCBTask.new('blame')
     blameT.help = "checks the person responsible for the latest commit and what is the ownership of the file.."
-    blameT.addFlag('filename', "Required, blame the selected filename.")
-    blameT.addFlag('branch', "Optional, master is default.")
+    blameT.addExecutor('filename', "Required, blame the selected filename.", nil)
+    blameT.addExecutor('branch', "Optional, master is default.", nil)
     @tasks[blameT.name] = blameT
     
     linesT = XCBTask.new('cocoapods')
     linesT.help = "checks the list of the longest source files and blame the user who last increased them."
-    linesT.addFlag('branch', "Optional, master is default.")
+    linesT.addExecutor('branch', "Optional, master is default.", nil)
     @tasks[linesT.name] = linesT
     
     helpT = XCBTask.new('help')
     helpT.needsProject = false
     helpT.help = "This help screen."
-    helpT.executeBlock = Proc.new do
+    
+    executor= Proc.new do
       help
     end
+    helpT.addMainExecutor(executor)
     @tasks[helpT.name] = helpT
     
   end
@@ -119,10 +144,12 @@ class XCBTaskManager
     
     @tasks.each do |key, task|
       puts "\n> #{task.name}: #{task.help}"
-      if task.flags.size > 0
+      if task.executors.size > 1
         puts "  Flags:"
-        task.flags.each do |flag, desc|
-          puts "    -#{flag} : #{desc}"
+        task.executors.each do |name, executor|
+          if name != '__main'
+            puts "    -#{name} : #{executor[:description]}"
+          end
         end
       end
     end
