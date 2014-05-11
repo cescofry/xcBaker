@@ -1,4 +1,4 @@
-import 'src/XCBConfig.rb'
+require_relative 'XCBConfig.rb'
 
 class XCBCocoapods
   

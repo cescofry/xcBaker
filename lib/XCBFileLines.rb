@@ -1,5 +1,4 @@
 require 'strscan'
-import 'src/XCBFileLines.rb'
 
 #
 # Report files with too many lines
