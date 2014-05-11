@@ -24,12 +24,12 @@ class XCBTask
     addExecutor('__main', '', block)
   end
   
-  def execute!(name = '__main')
+  def execute!(name = '__main', value = nil)
     executor = @executors[name]
     if !executor
       return
     end
-    executor[:block].call()
+    executor[:block].call(value)
   end
   
 end
@@ -76,8 +76,9 @@ class XCBTaskManager
     end
     gitT.addMainExecutor(executeBlock)
     
-    executeBlock = Proc.new do
-      puts "//TODO: Not implemented yet #{__FILE__} #{__LINE__}"
+    executeBlock = Proc.new do |path|
+      git = XCBGit.new(@config)
+      git.bareRemote(path)
     end
     gitT.addExecutor('bareRemote', "Create a bare repository on the given path and set it as origin.", executeBlock)
     @tasks[gitT.name] = gitT
@@ -107,6 +108,13 @@ class XCBTaskManager
       help
     end
     helpT.addMainExecutor(executor)
+    
+    executor= Proc.new do |value|
+      puts "========================\nVAlue of nano #{value}"
+    end
+    
+    helpT.addExecutor('nano', 'this is a test', executor)
+    
     @tasks[helpT.name] = helpT
     
   end
@@ -126,6 +134,13 @@ class XCBTaskManager
     end
     
     task.execute!
+    
+    if (@config.arguments)
+      @config.arguments.each do |key, value|
+        task.execute!(key, value)
+      end
+    end
+    
   end
   
 

@@ -60,8 +60,11 @@ end
 ###
 
 class XCBGit
-  
+      
+  attr_accessor :config
+      
   def initialize(config)
+    @config = config
     @branch = config.branch
     if !hasGit
       `git init`
@@ -154,6 +157,35 @@ class XCBGit
     
     command = "git log #{authorCommand} #{sinceCommand} --no-merges --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit | grep -v 'Point'"
     puts `#{command}`
+  end
+  
+  def bareRemote(path)
+    
+    path = File.expand_path(path)
+    repoName = @config.projectName + ".git"
+    fullPath = path
+    if !fullPath.end_with?('/')
+      fullPath.concat('/')
+    end
+    fullPath.concat(repoName)
+    
+    Dir.chdir(path) do
+      files = Dir.glob(repoName)
+      if files.size > 0
+        puts "Repository of name #{@config.projectName} already present at path #{path}"
+        return
+      end
+    
+      Dir.mkdir(repoName)
+      Dir.chdir(repoName) do
+        puts "Creates bare repo at path #{fullPath}"
+        system("git init --bare")
+      end
+      
+    end
+    
+    system("git remote add origin #{fullPath}")
+    
   end
     
   private 

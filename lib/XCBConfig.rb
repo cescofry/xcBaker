@@ -53,11 +53,19 @@ class XCBConfig
     if @arguments
        return
     end
-    @arguments = Array.new
+    @arguments = Hash.new
     ARGV.each do|arg|
       if arg.index('-') == 0
-        param = arg.gsub(/^\-+/, '')
-          @arguments.push(param)
+        
+        values = arg.split('=')
+        
+        key = values.first.gsub(/^\-+/, '')
+        value = nil
+        if (values.size > 1)
+          value = values[1]
+        end
+        
+        @arguments[key] = value
       elsif (!@task)
           @task = arg  
       else
