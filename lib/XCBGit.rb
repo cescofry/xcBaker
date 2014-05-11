@@ -71,6 +71,12 @@ class XCBGit
     end
   end
   
+  def addSubmodule(url)
+    system("git submodule add #{url} #{@config.extPath}")
+    system("git submodule init")
+    system("git submodule update")
+  end
+  
   def addCommitWithMessage(message)
     `git add *`
     `git commit -m \"#{message}\"`

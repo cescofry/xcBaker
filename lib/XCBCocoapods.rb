@@ -10,7 +10,7 @@ class XCBCocoapods
     
     personalLibrary = ''
     if (@config.libraryName && @config.libraryURL)
-      path = " :path => './#{@config.projectName}/Ext/#{@config.libraryName}'"
+      path = " :path => '#{@config.libraryPath}'"
       personalLibrary = "pod '##{@config.libraryName}', :git => '#{@config.libraryURL}', #{path}"
     end
     

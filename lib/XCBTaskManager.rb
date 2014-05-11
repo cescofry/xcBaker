@@ -78,6 +78,12 @@ class XCBTaskManager
       git.addCommitWithMessage("Initailize Project")
     end
     gitT.addMainExecutor(executeBlock)
+
+    executeBlock = Proc.new do
+      git = XCBGit.new(@config)
+      git.addSubmodule(@config.libraryURL)
+    end
+    gitT.addExecutor('addCommonLibrary', "Add Common Library as Submodule. [#{@config.libraryName}]", executeBlock)
     
     executeBlock = Proc.new do |path|
       git = XCBGit.new(@config)
