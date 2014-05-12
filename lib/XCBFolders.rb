@@ -1,3 +1,5 @@
+require 'xcodeproj'
+
 class XCBFolders
   attr_accessor :config
   
@@ -15,10 +17,29 @@ class XCBFolders
       if !files.include?(folder)
         puts "Create folder: #{folder}"
         Dir.mkdir folder
+        addFolderToProject(folder)
       end
     end
     
     stepOutProject
+  end
+  
+  
+  # documentation here : https://github.com/CocoaPods/Xcodeproj/blob/9f1fd5586cfc6ee084fc068a0d229885e33d00b7/spec/project/object/helpers/groupable_helper_spec.rb
+  def addFolderToProject(folderName)
+    projectFile = @config.projectName + '.xcodeproj'
+    project = Xcodeproj::Project.new(projectFile)
+    
+    file = project.new_group(folderName)
+    
+    # Add the file to the main target
+    
+    #mainTarget = project.new_target(:static, @config.projectName, :ios)
+    #puts "[#{file}]"    
+    #mainTarget.add_file_references([file])
+ 
+    # Save the project file
+    project.save_as(projectFile)
   end
   
   def moveAppDelegate()
