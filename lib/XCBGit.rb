@@ -72,6 +72,11 @@ class XCBGit
   end
   
   def addSubmodule(url)
+    if !url
+      puts "Trying to add a submodule without a repo"
+      return
+    end
+
     system("git submodule add #{url} #{@config.libraryPath}")
     system("git submodule init")
     system("git submodule update")
@@ -166,6 +171,10 @@ class XCBGit
   end
   
   def bareRemote(path)
+    if !path
+      puts "Trying to create a bare repo without location"
+      return
+    end
     
     path = File.expand_path(path)
     repoName = @config.projectName + ".git"
