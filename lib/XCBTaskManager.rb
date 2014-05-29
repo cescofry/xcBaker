@@ -3,6 +3,7 @@ require_relative 'XCBCocoapods'
 require_relative 'XCBGit'
 require_relative 'XCBFileLines'
 require_relative 'XCBFolders'
+require_relative 'XCBXCodeProject'
 
 class XCBTask
   attr_accessor :name
@@ -64,10 +65,18 @@ class XCBTaskManager
     
     executor = Proc.new do
       folders = XCBFolders.new(@config)
-      folders.moveAppDelegate   
+      folders.moveAppDelegate
     end
     
     folderT.addExecutor('appDelegate', "to move the appDelegate into Controllers.", executor)
+    @tasks[folderT.name] = folderT
+    
+    executor = Proc.new do      
+      xcode = XCBXCodeProject.new(@config)
+      xcode.addGroups
+    end
+    
+    folderT.addExecutor('XCode', "Creates the MVC groups on the XCode Projects", executor)
     @tasks[folderT.name] = folderT
     
     #Git

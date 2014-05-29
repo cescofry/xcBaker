@@ -10,6 +10,7 @@ class XCBConfig
   attr_accessor :branch
   attr_accessor :libraryName
   attr_accessor :libraryURL
+  attr_accessor :groups
   
 
   def initialize() 
@@ -27,6 +28,7 @@ class XCBConfig
     limit = ENV['linesLimit']
     @linesLimit = (limit)? limit : 50
     @hasTests = false
+    @groups = ['Controllers', 'Views', 'Models', 'Libs']
     
     defineArguments
   end
