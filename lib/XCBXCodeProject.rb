@@ -17,7 +17,8 @@ class XCBXCodeProject
   def addGroup(group)
     projectFile = "#{@config.projectName}.xcodeproj"
     project = Xcodeproj::Project.open(projectFile)
-    file = project.new_group(group)
+    projGroup = project.main_group[@config.projectName]
+    file = projGroup.new_group(group)
     puts "Add #{file} to #{projectFile}"
     project.save(projectFile)
   end
