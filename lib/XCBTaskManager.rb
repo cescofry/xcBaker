@@ -114,6 +114,24 @@ class XCBTaskManager
     podsT.addMainExecutor(executorBlock)
     @tasks[podsT.name] = podsT
   
+    #Iterate
+    iterateT = XCBTask.new('iterate')
+    iterateT.help = "Iterate through a new project using folders, git, cocoapods"
+    tasksTillNow = @tasks.clone
+    executorBlock = Proc.new do
+      tasksTillNow.each do |key, task|
+        task.executors do |name, block|
+          #
+          # ask for action using task.executors[name][description]
+          #
+          task(name)
+        end
+    
+      end
+    end
+    iterateT.addMainExecutor(executorBlock)
+    @tasks[iterateT.name] = iterateT
+    
       
     #Blame
     blameT = XCBTask.new('blame')
